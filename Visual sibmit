@@ -1,0 +1,24 @@
+# At the top of submit.py
+st.set_page_config(page_title="🌟 Wordcloud Submission", page_icon="📝", layout="centered")
+
+# Header
+st.markdown("""
+    <div style='text-align: center;'>
+        <h2 style='color: #4B8BBE;'>✨ Share Your Voice ✨</h2>
+        <p style='font-size: 18px;'>Contribute two words or short phrases to help shape our live wordcloud!</p>
+    </div>
+""", unsafe_allow_html=True)
+
+# Form
+with st.form("submission_form"):
+    st.markdown("##### 🗣️ Your Responses:")
+    r1 = st.text_input("1️⃣ Response 1 (max 50 characters)", max_chars=50)
+    r2 = st.text_input("2️⃣ Response 2 (max 50 characters)", max_chars=50)
+
+    col1, col2, _ = st.columns([1, 1, 4])
+    with col1:
+        submitted = st.form_submit_button("✨ Submit", use_container_width=True)
+    with col2:
+        st.markdown("")
+
+# After form submitted...
