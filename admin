@@ -64,10 +64,10 @@ with st.expander("➕ Create New Session File"):
 
 # 📦 Archive Button
 if selected_session and os.path.exists(selected_session):
-    if st.button("📦 Archive This Session"):
-        archived = archive_session_file(selected_session)
-        st.success(f"✅ Session archived to: `{os.path.basename(archived)}`")
-        st.experimental_rerun()
+if st.button("📦 Archive This Session"):
+    archived = archive_session_file(selected_session)
+    st.success(f"✅ Session archived as `{os.path.basename(archived)}`")
+    st.experimental_rerun()
 
 # 📋 Load Session Data
 df = pd.read_csv(selected_session) if selected_session else pd.DataFrame()
