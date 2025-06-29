@@ -1,16 +1,10 @@
-# .gitignore
-
-# OS-specific
-.DS_Store
-Thumbs.db
-
-# Python
 __pycache__/
-*.py[cod]
-venv/
-.env
-
-# Streamlit
-.submissions.csv
-custom_font.ttf
+*.pyc
+*.pyo
+.DS_Store
+env/
+.venv/
+*.ttf
 *.png
+*.jpg
+submissions.csv
