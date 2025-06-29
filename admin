@@ -22,6 +22,15 @@ if os.path.exists(file_path):
         )
 else:
     st.info("No submissions yet. Responses will appear here in real-time.")
+st.subheader("🎛️ Word Cloud Customization")
+
+col1, col2 = st.columns(2)
+with col1:
+    bg_color = st.color_picker("Background Color", "#FFFFFF")
+    colormap = st.selectbox("Color Scheme", ["viridis", "plasma", "inferno", "magma", "cividis", "Set3", "Pastel1"])
+with col2:
+    max_words = st.slider("Max Words", min_value=20, max_value=200, value=100, step=10)
+    random_state = st.slider("Random Seed (for layout)", 0, 100, 42)
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 
