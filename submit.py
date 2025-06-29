@@ -56,7 +56,12 @@ if session:
                 df = pd.concat([df, new_row], ignore_index=True)
             else:
                 df = new_row
-
+st.markdown("---")
+st.markdown(
+    "<p style='text-align:center;'>Are you an <b>event host</b>? "
+    "<a href='?page=Manage+Sessions'>Go to Manage Sessions 🔒</a></p>",
+    unsafe_allow_html=True
+)
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             df.to_csv(file_path, index=False)
             st.session_state.submitted = True
