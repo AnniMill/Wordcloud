@@ -1,183 +1,56 @@
-# pages/01_Manage Sessions.py
-
 import streamlit as st
-import pandas as pd
 import os
-from wordcloud import WordCloud
-import matplotlib.pyplot as plt
-from io import BytesIO
-from PIL import Image
-import numpy as np
 import json
-import os
-st.write("📂 Current working directory:", os.getcwd())
+from datetime import datetime
 
-from components.theme_utils import (
-    init_theme,
-    load_theme_from_file,
-    export_theme_to_json,
-    archive_session_file
-)
+# 💼 Admin password (from environment variable)
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "changeme")
 
-st.set_page_config(page_title="Admin Panel", page_icon="🧰", layout="wide")
-st.sidebar.info("🛠️ Debug: Admin page is loaded")
-# 🔐 Password protection
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "secret123")
-
+# 🔐 Session auth
 if "admin_authenticated" not in st.session_state:
     st.session_state.admin_authenticated = False
 
 if not st.session_state.admin_authenticated:
-    st.title("🔒 Admin Login")
-    pw = st.text_input("Password", type="password")
-    if st.button("Unlock"):
-        if pw == ADMIN_PASSWORD:
-            st.session_state.admin_authenticated = True
-            st.experimental_rerun()
-        else:
-            st.error("Incorrect password.")
+    st.title("🔐 Admin Login")
+    pwd = st.text_input("Enter admin password", type="password")
+    if st.button("Login") and pwd == ADMIN_PASSWORD:
+        st.session_state.admin_authenticated = True
+        st.experimental_rerun()
+    elif st.button("Login"):
+        st.error("🚫 Incorrect password")
     st.stop()
 
-# 🧠 Initialize theme state
-init_theme()
+# ✅ Logged in – show session manager
+st.title("🛠️ Manage Sessions")
 
-st.title("🧰 Admin Dashboard")
-
-# 📂 Session File Picker
-session_dir = "data"
-session_files = sorted([
-    os.path.join(session_dir, f) for f in os.listdir(session_dir)
-    if f.startswith("submissions_") and f.endswith(".csv")
-])
-
-selected_session = st.selectbox("📂 Select a Session", session_files, format_func=lambda x: os.path.basename(x))
-
-# ➕ Create New Session
-# 🔧 Maintain session list
-session_json_path = "data/sessions.json"
-
-def load_session_list():
-    if os.path.exists(session_json_path):
-        with open(session_json_path, "r") as f:
-            return json.load(f)
-    return []
-
-def save_session_list(session_names):
-    with open(session_json_path, "w") as f:
-        json.dump(sorted(set(session_names)), f, indent=2)
-
-# Sync created sessions to json
-existing_sessions = load_session_list()
-
-if new_session_name and fname not in session_files:
-    pd.DataFrame(columns=["timestamp", "response1", "response2"]).to_csv(fname, index=False)
-    existing_sessions.append(new_session_name)
-    save_session_list(existing_sessions)
-    st.success(f"Session '{new_session_name}' created!")
-    st.experimental_rerun()
-
-# 📦 Archive Button
-if selected_session and os.path.exists(selected_session):
-if st.button("📦 Archive This Session"):
-    archived = archive_session_file(selected_session)
-    st.success(f"✅ Session archived as `{os.path.basename(archived)}`")
-    st.experimental_rerun()
-
-# 📋 Load Session Data
-df = pd.read_csv(selected_session) if selected_session else pd.DataFrame()
-all_text = " ".join(df["response1"].dropna().tolist() + df["response2"].dropna().tolist()) if not df.empty else ""
-
-st.subheader("📋 Submissions")
-if not df.empty:
-    st.dataframe(df, use_container_width=True)
-    st.download_button("⬇ Export CSV", df.to_csv(index=False), file_name=os.path.basename(selected_session), mime="text/csv")
-else:
-    st.info("No submissions yet for this session.")
-
-# 🎨 Theme Management
-st.subheader("🎨 Load a Theme (Optional)")
-theme_file = st.file_uploader("Upload `.json` theme", type="json")
-if theme_file:
-    success, message = load_theme_from_file(theme_file)
-    if success:
-        st.success(message)
-    else:
-        st.error(message)
-
-# Customization Controls
-bg = st.color_picker("Background", st.session_state.theme_settings["backgroundColor"])
-colormap = st.selectbox("Colormap", ["viridis", "plasma", "magma", "inferno", "Set3", "Pastel1"])
-max_words = st.slider("Max Words", 10, 200, st.session_state.theme_settings["maxWords"])
-seed = st.slider("Random Seed", 0, 100, st.session_state.theme_settings["randomSeed"])
-font_file = st.file_uploader("Upload Font (.ttf)", type=["ttf"])
-mask_file = st.file_uploader("Upload Mask (PNG/JPG)", type=["png", "jpg"])
-
-# File handling
-font_path = None
-if font_file:
-    font_path = "custom_font.ttf"
-    with open(font_path, "wb") as f:
-        f.write(font_file.getbuffer())
-
-mask_array = None
-if mask_file:
-    mask_array = np.array(Image.open(mask_file).convert("L"))
-
-# Export Theme
-if st.button("📥 Save Theme"):
-    theme_json = export_theme_to_json(bg, colormap, max_words, seed)
-    st.download_button("⬇ Download Theme", theme_json, "custom_theme.json", "application/json")
-
-# 🌥️ Word Cloud Preview
-st.subheader("🌥️ Word Cloud Preview")
-if all_text.strip():
-    wc = WordCloud(
-        background_color=bg,
-        colormap=colormap,
-        max_words=max_words,
-        mask=mask_array,
-        font_path=font_path,
-        random_state=seed,
-        width=800, height=400
-    ).generate(all_text)
-
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.imshow(wc, interpolation="bilinear")
-    ax.axis("off")
-    st.pyplot(fig)
-
-    buf = BytesIO()
-    fig.savefig(buf, format="png", bbox_inches="tight", pad_inches=0.1)
-    buf.seek(0)
-    st.download_button("📸 Download Cloud (PNG)", buf, file_name="wordcloud.png", mime="image/png")
-else:
-    st.warning("No responses to render yet.")
-import json
-from datetime import datetime
-
-session_json_path = "data/sessions.json"
+session_path = "data/sessions.json"
 
 def load_sessions():
-    if os.path.exists(session_json_path):
-        with open(session_json_path, "r") as f:
+    if os.path.exists(session_path):
+        with open(session_path, "r") as f:
             return json.load(f)
     return []
 
-def save_sessions(session_list):
-    with open(session_json_path, "w") as f:
-        json.dump(session_list, f, indent=2)
+def save_sessions(sessions):
+    with open(session_path, "w") as f:
+        json.dump(sessions, f, indent=2)
 
 sessions = load_sessions()
 
-# ➕ Add Session Form
+# ➕ Add new session
 with st.expander("➕ Create New Session"):
     name = st.text_input("Session Name").strip().lower().replace(" ", "_")
-    active = st.toggle("Active", value=True)
-    start_time = st.datetime_input("Start Time", value=datetime.now())
-    end_time = st.datetime_input("End Time", value=datetime.now())
+    active = st.toggle("Active", True)
+    col1, col2 = st.columns(2)
+    with col1:
+        start_time = st.datetime_input("Start Time", datetime.now())
+    with col2:
+        end_time = st.datetime_input("End Time", datetime.now())
 
     if st.button("Save Session"):
-        if name:
+        if not name:
+            st.warning("Please enter a session name.")
+        else:
             sessions.append({
                 "name": name,
                 "active": active,
@@ -187,5 +60,17 @@ with st.expander("➕ Create New Session"):
             save_sessions(sessions)
             st.success(f"✅ Session '{name}' saved.")
             st.experimental_rerun()
-        else:
-            st.warning("Please enter a name.")
+
+# 📋 View all sessions
+if sessions:
+    st.subheader("📄 Existing Sessions")
+    for i, s in enumerate(sessions):
+        with st.expander(f"🔹 {s['name']}"):
+            s["active"] = st.toggle("Active", value=s["active"], key=f"active_{i}")
+            s["start"] = st.text_input("Start Time", value=s["start"], key=f"start_{i}")
+            s["end"] = st.text_input("End Time", value=s["end"], key=f"end_{i}")
+    if st.button("💾 Save All Changes"):
+        save_sessions(sessions)
+        st.success("✅ Sessions updated.")
+else:
+    st.info("No sessions found. Add one above to get started.")
