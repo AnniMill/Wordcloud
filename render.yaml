@@ -2,12 +2,10 @@ services:
   - type: web
     name: wordcloud-app
     env: python
-    region: frankfurt
-    plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: streamlit run submit.py --server.port $PORT --server.enableCORS false
+    startCommand: streamlit run submit.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.11
       - key: ADMIN_PASSWORD
-        value: your_secure_password
+        value: Daxter4183
