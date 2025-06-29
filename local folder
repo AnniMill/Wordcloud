@@ -3,22 +3,23 @@ wordcloud-app/
 │   └── config.toml
 │
 ├── components/
-│   └── theme_utils.py           # Theme handling utilities
+│   └── theme_utils.py
 │
 ├── data/
-│   ├── submissions_team1.csv    # Example session file
+│   ├── .gitkeep                 ← ensures folder is tracked
 │   └── archive/
-│       └── 20250701-101500_submissions_team1.csv
+│       └── .gitkeep
 │
 ├── pages/
-│   └── 1_Admin.py               # Admin dashboard with password, themes, archiving
+│   └── 1_Admin.py
 │
 ├── assets/
-│   ├── preview.png
+│   ├── preview.png              ← optional screenshots
 │   └── ...
 │
 ├── .gitignore
 ├── README.md
 ├── requirements.txt
 ├── render.yaml
-└── submit.py
+├── submit.py
+├── setup_project.py            ← optional project bootstrap script
