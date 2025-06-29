@@ -2,17 +2,23 @@ wordcloud-app/
 ├── .streamlit/
 │   └── config.toml
 │
+├── components/
+│   └── theme_utils.py           # Theme handling utilities
+│
+├── data/
+│   ├── submissions_team1.csv    # Example session file
+│   └── archive/
+│       └── 20250701-101500_submissions_team1.csv
+│
 ├── pages/
-│   └── 1_Admin.py
+│   └── 1_Admin.py               # Admin dashboard with password, themes, archiving
 │
 ├── assets/
 │   ├── preview.png
-│   ├── submit.png
-│   └── admin.png
+│   └── ...
 │
 ├── .gitignore
-├── default_theme.json         # (optional: pre-saved theme config)
-├── render.yaml
-├── requirements.txt
 ├── README.md
+├── requirements.txt
+├── render.yaml
 └── submit.py
