@@ -11,7 +11,7 @@ wordcloud-app/
 │       └── .gitkeep
 │
 ├── pages/
-│   └── 1_Admin.py
+│   └── /01_Manage Sessions.py
 │
 ├── assets/
 │   ├── preview.png              ← optional screenshots
