@@ -33,8 +33,22 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-session = st.text_input("📛 Session Name (e.g. team1, day2)", max_chars=30).strip().lower().replace(" ", "_")
+session = st.text_input(import json
 
+session_list_path = "data/sessions.json"
+
+# Load approved sessions
+if os.path.exists(session_list_path):
+    with open(session_list_path, "r") as f:
+        approved_sessions = json.load(f)
+else:
+    approved_sessions = []
+
+if not approved_sessions:
+    st.error("🚫 No available sessions found. Please contact the event host.")
+    st.stop()
+
+session = st.selectbox("📛 Select Your Session", approved_sessions)
 if session:
     file_path = f"data/submissions_{session}.csv"
 
