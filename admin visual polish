@@ -1,0 +1,22 @@
+# pages/1_Admin.py
+st.set_page_config(page_title="Admin Panel", page_icon="🧰", layout="wide")
+st.markdown("""
+    <h1 style='color: #FF8C00;'>🧰 Wordcloud Admin Dashboard</h1>
+    <hr style='margin-top: -10px; margin-bottom: 30px;'/>
+""", unsafe_allow_html=True)
+
+col1, col2 = st.columns([3, 2])
+
+with col1:
+    st.subheader("📋 Live Responses")
+    if os.path.exists("submissions.csv"):
+        df = pd.read_csv("submissions.csv")
+        st.dataframe(df, use_container_width=True)
+    else:
+        st.info("Awaiting first submissions...")
+
+with col2:
+    st.subheader("📎 Export")
+    if os.path.exists("submissions.csv"):
+        df = pd.read_csv("submissions.csv")
+        st.download_button("⬇ Download CSV", data=df.to_csv(index=False), file_name="responses.csv", mime="text/csv")
