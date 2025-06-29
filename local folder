@@ -1,18 +1,18 @@
 wordcloud-app/
-│
-├── submit.py                 # Public submission form
-├── pages/
-│   └── 1_Admin.py            # Admin dashboard
-│
 ├── .streamlit/
-│   └── config.toml           # Theme + layout settings
+│   └── config.toml
 │
-├── requirements.txt          # All app dependencies
-├── render.yaml               # Render deployment configuration
-├── .gitignore                # Clean repo by ignoring unwanted files
-├── README.md                 # Full documentation + usage guide
-├── submissions.csv           # Auto-created when submissions arrive
-└── assets/
-    ├── preview.png           # (Optional) Homepage banner
-    ├── submit.png            # Screenshot of public form
-    └── admin.png             # Screenshot of admin panel
+├── pages/
+│   └── 1_Admin.py
+│
+├── assets/
+│   ├── preview.png
+│   ├── submit.png
+│   └── admin.png
+│
+├── .gitignore
+├── default_theme.json         # (optional: pre-saved theme config)
+├── render.yaml
+├── requirements.txt
+├── README.md
+└── submit.py
