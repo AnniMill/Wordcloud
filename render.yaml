@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: wordcloud-app
+    env: python
+    region: frankfurt  # or use 'oregon', 'singapore', etc.
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run submit.py --server.port $PORT --server.enableCORS false
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
