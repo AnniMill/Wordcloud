@@ -1,5 +1,7 @@
 wordcloud/
-├── app.py
+├── pages/
+│   └── 1_Admin.py        # Admin view: wordcloud & response log
+├── submit.py             # Public submission form
+├── submissions.csv       # Response log file (created on first run)
 ├── requirements.txt
-├── README.md
-└── submissions.csv  # Optional (auto-created)
+└── README.md
