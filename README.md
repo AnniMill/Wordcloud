@@ -1,24 +1,28 @@
-# 🔠 Wordcloud Submission App
+# 🌥️ Wordcloud Submission App
 
-[![Deploy to Render](https://img.shields.io/badge/Deploy%20to-Render-blue)](https://render.com)
-[![Made with Streamlit](https://img.shields.io/badge/Made%20with-Streamlit-1f6f8b.svg)](https://streamlit.io)
+A real-time, themeable word cloud experience built with Python and Streamlit — complete with public submission form, admin dashboard, custom theming, session support, and auto-archiving.
 
-A QR-friendly interactive app to collect real-time submissions and visualize them as a word cloud. Perfect for classrooms, workshops, and live events!
+![preview](assets/preview.png)
 
-![App Preview](assets/preview.png)
+---
 
-## ✨ Features
+## 🚀 Features
 
-- 📱 QR-based submission form
-- 💬 Live wordcloud dashboard for administrators
-- 🎨 Customize colors, fonts, and shapes with upload support
-- 💾 Download cloud and response logs
-- 🌐 Easy to deploy via [Render](https://render.com)
+- ✅ Public submission form with QR-based sharing
+- ✅ Admin dashboard with password protection
+- ✅ Support for multiple sessions (e.g., teams, events)
+- 🎨 Live customization: colors, font upload, image masks
+- 💾 Save & load themes (`.json`)
+- 📦 Archive sessions automatically
+- 📊 Export submissions as CSV
+- 🌐 Deployable instantly on [Render](https://render.com)
 
-## 🧪 Try It Locally
+---
+
+## 🛠️ Setup Instructions
+
+### 1. Clone the repo
 
 ```bash
-git clone https://github.com/AnniMill/Wordcloud.git
-cd Wordcloud
-pip install -r requirements.txt
-streamlit run submit.py
+git clone https://github.com/yourusername/wordcloud-app.git
+cd wordcloud-app
