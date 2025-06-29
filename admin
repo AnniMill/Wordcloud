@@ -9,6 +9,8 @@ from io import BytesIO
 from PIL import Image
 import numpy as np
 import json
+import os
+st.write("📂 Current working directory:", os.getcwd())
 
 from components.theme_utils import (
     init_theme,
