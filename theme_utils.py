@@ -33,7 +33,7 @@ def export_theme_to_json(bg, colormap, max_words, seed):
 
 def archive_session_file(file_path):
     archive_dir = os.path.join("data", "archive")
-    os.makedirs(archive_dir, exist_ok=True)
+    os.makedirs(archive_dir, exist_ok=True)  # ✅ ensure directory
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     filename = os.path.basename(file_path)
     archived = os.path.join(archive_dir, f"{timestamp}_{filename}")
