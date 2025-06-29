@@ -8,3 +8,9 @@ env/
 *.png
 *.jpg
 submissions.csv
+# Ignore session data and archive contents
+data/*.csv
+data/archive/
+
+# Keep the folder structure
+!data/.gitkeep
