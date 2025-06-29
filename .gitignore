@@ -1,16 +1,12 @@
 __pycache__/
 *.pyc
-*.pyo
-.DS_Store
-env/
-.venv/
 *.ttf
 *.png
 *.jpg
-submissions.csv
-# Ignore session data and archive contents
+.DS_Store
+.env
+.venv/
 data/*.csv
 data/archive/
-
-# Keep the folder structure
 !data/.gitkeep
+!data/archive/.gitkeep
