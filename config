@@ -5,12 +5,12 @@ enableXsrfProtection = false
 port = 8501
 
 [theme]
-primaryColor = "#4B8BBE"         # Button and accent color
-backgroundColor = "#F5F7FA"      # Overall background
-secondaryBackgroundColor = "#E0E0E0"  # Sidebar and form background
+primaryColor = "#4B8BBE"           # Your accent color (buttons, sliders)
+backgroundColor = "#F5F7FA"        # Soft light background
+secondaryBackgroundColor = "#E0E0E0"  # Sidebar and panels
 textColor = "#262730"
-font = "sans serif"              # Options: "sans serif", "serif", "monospace"
+font = "sans serif"                # Options: sans serif, serif, monospace
 
 [client]
-showErrorDetails = false         # Hide full stack traces from users
-toolbarMode = "minimal"          # Hides hamburger menu
+toolbarMode = "minimal"            # Hides the top-right hamburger menu
+showErrorDetails = false           # Clean error messages for users
