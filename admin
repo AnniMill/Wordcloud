@@ -51,16 +51,28 @@ session_files = sorted([
 selected_session = st.selectbox("📂 Select a Session", session_files, format_func=lambda x: os.path.basename(x))
 
 # ➕ Create New Session
-with st.expander("➕ Create New Session File"):
-    new_session_name = st.text_input("New Session Name").strip().lower().replace(" ", "_")
-    if st.button("Create Session"):
-        fname = f"{session_dir}/submissions_{new_session_name}.csv"
-        if new_session_name and not os.path.exists(fname):
-            pd.DataFrame(columns=["timestamp", "response1", "response2"]).to_csv(fname, index=False)
-            st.success(f"Session '{new_session_name}' created!")
-            st.experimental_rerun()
-        else:
-            st.warning("Invalid or duplicate session name.")
+# 🔧 Maintain session list
+session_json_path = "data/sessions.json"
+
+def load_session_list():
+    if os.path.exists(session_json_path):
+        with open(session_json_path, "r") as f:
+            return json.load(f)
+    return []
+
+def save_session_list(session_names):
+    with open(session_json_path, "w") as f:
+        json.dump(sorted(set(session_names)), f, indent=2)
+
+# Sync created sessions to json
+existing_sessions = load_session_list()
+
+if new_session_name and fname not in session_files:
+    pd.DataFrame(columns=["timestamp", "response1", "response2"]).to_csv(fname, index=False)
+    existing_sessions.append(new_session_name)
+    save_session_list(existing_sessions)
+    st.success(f"Session '{new_session_name}' created!")
+    st.experimental_rerun()
 
 # 📦 Archive Button
 if selected_session and os.path.exists(selected_session):
