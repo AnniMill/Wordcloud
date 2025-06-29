@@ -1,3 +1,5 @@
+# pages/1_Admin.py
+
 import streamlit as st
 import pandas as pd
 import os
@@ -8,8 +10,16 @@ from PIL import Image
 import numpy as np
 import json
 
+from components.theme_utils import (
+    init_theme,
+    load_theme_from_file,
+    export_theme_to_json,
+    archive_session_file
+)
+
 st.set_page_config(page_title="Admin Panel", page_icon="🧰", layout="wide")
 
+# 🔐 Password protection
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "secret123")
 
 if "admin_authenticated" not in st.session_state:
@@ -26,19 +36,25 @@ if not st.session_state.admin_authenticated:
             st.error("Incorrect password.")
     st.stop()
 
-# ✅ Admin dashboard
+# 🧠 Initialize theme state
+init_theme()
+
 st.title("🧰 Admin Dashboard")
+
+# 📂 Session File Picker
+session_dir = "data"
 session_files = sorted([
-    f"data/{f}" for f in os.listdir("data")
+    os.path.join(session_dir, f) for f in os.listdir(session_dir)
     if f.startswith("submissions_") and f.endswith(".csv")
 ])
-selected_session = st.selectbox("📂 Choose a session", session_files)
 
-# ➕ Create a new session file
-with st.expander("➕ Create New Session"):
-    new_session_name = st.text_input("New Session Name", key="create_session").strip().lower().replace(" ", "_")
+selected_session = st.selectbox("📂 Select a Session", session_files, format_func=lambda x: os.path.basename(x))
+
+# ➕ Create New Session
+with st.expander("➕ Create New Session File"):
+    new_session_name = st.text_input("New Session Name").strip().lower().replace(" ", "_")
     if st.button("Create Session"):
-        fname = f"submissions_{new_session_name}.csv"
+        fname = f"{session_dir}/submissions_{new_session_name}.csv"
         if new_session_name and not os.path.exists(fname):
             pd.DataFrame(columns=["timestamp", "response1", "response2"]).to_csv(fname, index=False)
             st.success(f"Session '{new_session_name}' created!")
@@ -46,68 +62,79 @@ with st.expander("➕ Create New Session"):
         else:
             st.warning("Invalid or duplicate session name.")
 
-# Load selected session
+# 📦 Archive Button
+if selected_session and os.path.exists(selected_session):
+    if st.button("📦 Archive This Session"):
+        archived = archive_session_file(selected_session)
+        st.success(f"✅ Session archived to: `{os.path.basename(archived)}`")
+        st.experimental_rerun()
+
+# 📋 Load Session Data
 df = pd.read_csv(selected_session) if selected_session else pd.DataFrame()
 all_text = " ".join(df["response1"].dropna().tolist() + df["response2"].dropna().tolist()) if not df.empty else ""
 
-# Data display
 st.subheader("📋 Submissions")
 if not df.empty:
     st.dataframe(df, use_container_width=True)
-    st.download_button("⬇ Download", df.to_csv(index=False), selected_session)
+    st.download_button("⬇ Export CSV", df.to_csv(index=False), file_name=os.path.basename(selected_session), mime="text/csv")
 else:
-    st.info("No submissions in this session yet.")
+    st.info("No submissions yet for this session.")
 
-# 🎨 Theme upload
-st.subheader("🎨 Load Theme")
-if "theme_settings" not in st.session_state:
-    st.session_state.theme_settings = {
-        "backgroundColor": "#FFFFFF", "colormap": "viridis", "maxWords": 100, "randomSeed": 42
-    }
-
-theme_file = st.file_uploader("Upload .json theme", type="json")
+# 🎨 Theme Management
+st.subheader("🎨 Load a Theme (Optional)")
+theme_file = st.file_uploader("Upload `.json` theme", type="json")
 if theme_file:
-    try:
-        loaded = json.load(theme_file)
-        st.session_state.theme_settings.update(loaded)
-        st.success("Theme loaded.")
-    except:
-        st.error("Invalid theme file.")
+    success, message = load_theme_from_file(theme_file)
+    if success:
+        st.success(message)
+    else:
+        st.error(message)
 
-# Theme controls
-bg = st.color_picker("Background Color", st.session_state.theme_settings["backgroundColor"])
-colormap = st.selectbox("Color Map", ["viridis", "plasma", "magma", "inferno", "Set3", "Pastel1"])
+# Customization Controls
+bg = st.color_picker("Background", st.session_state.theme_settings["backgroundColor"])
+colormap = st.selectbox("Colormap", ["viridis", "plasma", "magma", "inferno", "Set3", "Pastel1"])
 max_words = st.slider("Max Words", 10, 200, st.session_state.theme_settings["maxWords"])
-random_seed = st.slider("Seed", 0, 100, st.session_state.theme_settings["randomSeed"])
-font_file = st.file_uploader("Upload Font", type=["ttf"])
-mask_file = st.file_uploader("Upload Mask", type=["png", "jpg"])
+seed = st.slider("Random Seed", 0, 100, st.session_state.theme_settings["randomSeed"])
+font_file = st.file_uploader("Upload Font (.ttf)", type=["ttf"])
+mask_file = st.file_uploader("Upload Mask (PNG/JPG)", type=["png", "jpg"])
 
+# File handling
 font_path = None
 if font_file:
     font_path = "custom_font.ttf"
     with open(font_path, "wb") as f:
         f.write(font_file.getbuffer())
 
-mask = None
+mask_array = None
 if mask_file:
-    mask = np.array(Image.open(mask_file).convert("L"))
+    mask_array = np.array(Image.open(mask_file).convert("L"))
 
-# Export theme
-if st.button("📥 Export Theme"):
-    theme = {
-        "backgroundColor": bg, "colormap": colormap,
-        "maxWords": max_words, "randomSeed": random_seed
-    }
-    st.download_button("⬇ Download Theme", json.dumps(theme, indent=2), "custom_theme.json")
+# Export Theme
+if st.button("📥 Save Theme"):
+    theme_json = export_theme_to_json(bg, colormap, max_words, seed)
+    st.download_button("⬇ Download Theme", theme_json, "custom_theme.json", "application/json")
 
-# Generate word cloud
+# 🌥️ Word Cloud Preview
 st.subheader("🌥️ Word Cloud Preview")
 if all_text.strip():
     wc = WordCloud(
-        background_color=bg, colormap=colormap, max_words=max_words,
-        font_path=font_path, mask=mask, random_state=random_seed,
+        background_color=bg,
+        colormap=colormap,
+        max_words=max_words,
+        mask=mask_array,
+        font_path=font_path,
+        random_state=seed,
         width=800, height=400
     ).generate(all_text)
 
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.imshow(wc, interpolation
+    ax.imshow(wc, interpolation="bilinear")
+    ax.axis("off")
+    st.pyplot(fig)
+
+    buf = BytesIO()
+    fig.savefig(buf, format="png", bbox_inches="tight", pad_inches=0.1)
+    buf.seek(0)
+    st.download_button("📸 Download Cloud (PNG)", buf, file_name="wordcloud.png", mime="image/png")
+else:
+    st.warning("No responses to render yet.")
