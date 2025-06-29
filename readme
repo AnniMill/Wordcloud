@@ -1,16 +1,18 @@
-# Wordcloud Submission App
+# 🔠 Wordcloud Submission App
 
-A lightweight Streamlit web app for collecting short responses and visualizing them in a live wordcloud.
+A Streamlit-powered web app for collecting participant input via QR code and visualizing it in a custom live word cloud.
 
-## 💡 Features
-- Clean QR-scannable form for user submissions (2 words/phrases)
-- Submissions saved with timestamps to a CSV file
-- Dynamic "Thank You" page with emoji and QR code sharing
-- Ready for deployment on [Render](https://render.com)
+## ✨ Features
 
-## 🚀 Getting Started
+- 📱 Mobile-friendly submission form
+- 🧰 Admin dashboard with real-time word cloud and export tools
+- 🎨 Customize colors, fonts, and cloud shape with image masks
+- 💾 Download word cloud image and response logs
 
-1. Clone this repo:
-   ```bash
-   git clone https://github.com/yourusername/wordcloud-app.git
-   cd wordcloud-app
+## 🚀 Run Locally
+
+```bash
+git clone https://github.com/AnniMill/wordcloud.git
+cd wordcloud
+pip install -r requirements.txt
+streamlit run submit.py
