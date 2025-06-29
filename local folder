@@ -1,5 +1,6 @@
 wordcloud-app/
 ├── submit.py
+    └── config.toml
 ├── pages/
 │   └── Manage Sessions.py
 ├── components/
