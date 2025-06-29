@@ -54,4 +54,4 @@ if submitted:
         st.session_state.submitted = True
         st.rerun()
     else:
-        st.error("⚠️ Please fill in both responses before submitting.")th fields.")
+        st.error("⚠️ Please fill in both responses before submitting.")
