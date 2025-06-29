@@ -150,3 +150,40 @@ if all_text.strip():
     st.download_button("📸 Download Cloud (PNG)", buf, file_name="wordcloud.png", mime="image/png")
 else:
     st.warning("No responses to render yet.")
+import json
+from datetime import datetime
+
+session_json_path = "data/sessions.json"
+
+def load_sessions():
+    if os.path.exists(session_json_path):
+        with open(session_json_path, "r") as f:
+            return json.load(f)
+    return []
+
+def save_sessions(session_list):
+    with open(session_json_path, "w") as f:
+        json.dump(session_list, f, indent=2)
+
+sessions = load_sessions()
+
+# ➕ Add Session Form
+with st.expander("➕ Create New Session"):
+    name = st.text_input("Session Name").strip().lower().replace(" ", "_")
+    active = st.toggle("Active", value=True)
+    start_time = st.datetime_input("Start Time", value=datetime.now())
+    end_time = st.datetime_input("End Time", value=datetime.now())
+
+    if st.button("Save Session"):
+        if name:
+            sessions.append({
+                "name": name,
+                "active": active,
+                "start": start_time.strftime("%Y-%m-%d %H:%M"),
+                "end": end_time.strftime("%Y-%m-%d %H:%M")
+            })
+            save_sessions(sessions)
+            st.success(f"✅ Session '{name}' saved.")
+            st.experimental_rerun()
+        else:
+            st.warning("Please enter a name.")
