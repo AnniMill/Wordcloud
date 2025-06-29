@@ -7,7 +7,7 @@ import qrcode
 from io import BytesIO
 
 st.set_page_config(page_title="Submit a Response", page_icon="📝")
-
+st.sidebar.info("🧪 Debug: This sidebar is rendering from submit.py")
 st.title("💬 Word Cloud Submission Form")
 
 # 🔐 Load valid sessions
