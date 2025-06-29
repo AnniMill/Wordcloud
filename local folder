@@ -1,12 +1,18 @@
-wordcloud/
-├── .streamlit/
-│   └── config.toml             # App theming and layout settings
+wordcloud-app/
 │
+├── submit.py                 # Public submission form
 ├── pages/
-│   └── 1_Admin.py              # Admin dashboard: controls, logs, live word cloud
+│   └── 1_Admin.py            # Admin dashboard
 │
-├── submissions.csv             # Automatically created when submissions come in
-├── submit.py                   # Public submission form with QR
-├── requirements.txt            # All dependencies
-├── README.md                   # Setup guide and documentation
-└── custom_font.ttf             # Optional: example custom font if using one
+├── .streamlit/
+│   └── config.toml           # Theme + layout settings
+│
+├── requirements.txt          # All app dependencies
+├── render.yaml               # Render deployment configuration
+├── .gitignore                # Clean repo by ignoring unwanted files
+├── README.md                 # Full documentation + usage guide
+├── submissions.csv           # Auto-created when submissions arrive
+└── assets/
+    ├── preview.png           # (Optional) Homepage banner
+    ├── submit.png            # Screenshot of public form
+    └── admin.png             # Screenshot of admin panel
