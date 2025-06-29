@@ -1,0 +1,5 @@
+wordcloud/
+├── app.py
+├── requirements.txt
+├── README.md
+└── submissions.csv  # Optional (auto-created)
