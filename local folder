@@ -1,25 +1,16 @@
 wordcloud-app/
-├── .streamlit/
-│   └── config.toml
-│
+├── submit.py
+├── pages/
+│   └── Manage Sessions.py
 ├── components/
 │   └── theme_utils.py
-│
 ├── data/
-│   ├── .gitkeep                 ← ensures folder is tracked
+│   ├── .gitkeep
+│   ├── sessions.json
 │   └── archive/
 │       └── .gitkeep
-│
-├── pages/
-│   └── /01_Manage Sessions.py
-│
-├── assets/
-│   ├── preview.png              ← optional screenshots
-│   └── ...
-│
-├── .gitignore
-├── README.md
+├── .streamlit/
+│   └── config.toml
 ├── requirements.txt
 ├── render.yaml
-├── submit.py
-├── setup_project.py            ← optional project bootstrap script
+├── .gitignore
