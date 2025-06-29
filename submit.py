@@ -36,7 +36,7 @@ st.markdown("""
 session = st.text_input("📛 Session Name (e.g. team1, day2)", max_chars=30).strip().lower().replace(" ", "_")
 
 if session:
-    file_path = f"submissions_{session}.csv"
+    file_path = f"data/submissions_{session}.csv"
 
     with st.form("submission_form"):
         r1 = st.text_input("1️⃣ Response 1", max_chars=50)
