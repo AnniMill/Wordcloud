@@ -22,3 +22,33 @@ if os.path.exists(file_path):
         )
 else:
     st.info("No submissions yet. Responses will appear here in real-time.")
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+
+st.subheader("🌥️ Live Word Cloud")
+
+# Load data and combine responses
+if os.path.exists("submissions.csv"):
+    df = pd.read_csv("submissions.csv")
+
+    # Combine all responses into one text blob
+    text = " ".join(df["response1"].dropna().tolist() + df["response2"].dropna().tolist())
+
+    if text:
+        wc = WordCloud(
+            width=800,
+            height=400,
+            background_color="white",
+            colormap="viridis",
+            prefer_horizontal=0.9
+        ).generate(text)
+
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.imshow(wc, interpolation="bilinear")
+        ax.axis("off")
+
+        st.pyplot(fig)
+    else:
+        st.warning("No responses yet for the word cloud.")
+else:
+    st.info("Waiting for responses to generate the word cloud...")
