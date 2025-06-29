@@ -1,4 +1,3 @@
-# pages/1_Admin.py
 import streamlit as st
 import pandas as pd
 import os
@@ -7,57 +6,62 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 from PIL import Image
 import numpy as np
+import json
 
-# 🌐 App config
 st.set_page_config(page_title="Admin Panel", page_icon="🧰", layout="wide")
+
+if "theme_settings" not in st.session_state:
+    st.session_state.theme_settings = {
+        "backgroundColor": "#FFFFFF",
+        "colormap": "viridis",
+        "maxWords": 100,
+        "randomSeed": 42
+    }
+
+file_path = "submissions.csv"
+df = pd.read_csv(file_path) if os.path.exists(file_path) else pd.DataFrame()
+all_text = " ".join(df.get("response1", []) + df.get("response2", []))
 
 st.markdown("""
     <h1 style='color: #FF8C00;'>🧰 Wordcloud Admin Dashboard</h1>
-    <p style='font-size:16px;'>Customize your live word cloud, download responses, and tailor the look & feel for your event.</p>
-    <hr style='margin-bottom: 25px;'/>
+    <p>Customize your cloud, download data, and apply or save themes.</p>
+    <hr/>
 """, unsafe_allow_html=True)
 
-# 📂 Load submission data
-file_path = "submissions.csv"
-df = pd.read_csv(file_path) if os.path.exists(file_path) else pd.DataFrame()
-
-# 📋 Response Log
+# 📋 Response table
 st.subheader("📋 Live Responses")
 if not df.empty:
     st.dataframe(df, use_container_width=True)
-    st.download_button("⬇ Download All Responses (CSV)", df.to_csv(index=False), file_name="responses.csv", mime="text/csv")
+    st.download_button("⬇ Download Responses", df.to_csv(index=False), "responses.csv", "text/csv")
 else:
-    st.info("No submissions yet. This panel will update automatically.")
+    st.info("No responses yet.")
 
-# 🔤 Build text blob for the cloud
-all_text = " ".join(df["response1"].dropna().tolist() + df["response2"].dropna().tolist())
+# 📁 Load theme from file
+st.subheader("📁 Load Saved Theme")
+uploaded_theme = st.file_uploader("Upload .json theme", type="json")
+if uploaded_theme:
+    try:
+        loaded = json.load(uploaded_theme)
+        st.session_state.theme_settings.update({
+            "backgroundColor": loaded.get("backgroundColor", st.session_state.theme_settings["backgroundColor"]),
+            "colormap": loaded.get("colormap", st.session_state.theme_settings["colormap"]),
+            "maxWords": loaded.get("maxWords", st.session_state.theme_settings["maxWords"]),
+            "randomSeed": loaded.get("randomSeed", st.session_state.theme_settings["randomSeed"])
+        })
+        st.success("✅ Theme loaded")
+    except:
+        st.error("Invalid JSON file.")
 
-# 🎛️ Appearance Options
+# 🎨 Theme controls
 st.subheader("🎨 Customize Word Cloud")
 
-# Event theme presets
-themes = {
-    "Classic": {"bg": "#FFFFFF", "colormap": "viridis"},
-    "Pastel Party": {"bg": "#FFF0F5", "colormap": "Pastel1"},
-    "Dark Mode": {"bg": "#1E1E1E", "colormap": "plasma"}
-}
+bg_color = st.color_picker("Background Color", st.session_state.theme_settings["backgroundColor"])
+colormap = st.selectbox("Colormap", ["viridis", "plasma", "magma", "Pastel1", "Set3", "inferno"], index=0)
+max_words = st.slider("Max Words", 10, 200, st.session_state.theme_settings["maxWords"])
+random_seed = st.slider("Random Seed", 0, 100, st.session_state.theme_settings["randomSeed"])
+font_file = st.file_uploader("Upload font (.ttf)", type=["ttf"])
+mask_file = st.file_uploader("Upload mask image (PNG/JPG)", type=["png", "jpg"])
 
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    theme_choice = st.selectbox("Theme Preset", list(themes.keys()), index=0)
-    bg_color = st.color_picker("Background Color", themes[theme_choice]["bg"])
-
-with col2:
-    colormap = st.selectbox("Color Scheme", ["viridis", "plasma", "inferno", "magma", "cividis", "Set3", "Pastel1"], index=0)
-    max_words = st.slider("Max Words", 10, 200, value=100, step=10)
-
-with col3:
-    random_seed = st.slider("Random Seed", 0, 100, 42)
-    font_file = st.file_uploader("Upload .ttf Font (optional)", type=["ttf"])
-    mask_file = st.file_uploader("Upload Image Mask (PNG/JPG)", type=["png", "jpg"])
-
-# Handle file inputs
 font_path = None
 if font_file:
     font_path = "custom_font.ttf"
@@ -69,19 +73,29 @@ if mask_file:
     image = Image.open(mask_file).convert("L")
     mask_array = np.array(image)
 
-# 🔮 Generate and display the word cloud
-st.subheader("🌥️ Live Word Cloud")
+# Save theme
+if st.button("📥 Save Current Theme (.json)"):
+    current_theme = {
+        "backgroundColor": bg_color,
+        "colormap": colormap,
+        "maxWords": max_words,
+        "randomSeed": random_seed
+    }
+    st.download_button("⬇ Download Theme", json.dumps(current_theme, indent=2), "custom_theme.json", "application/json")
+
+# 🌥️ Generate word cloud
+st.subheader("🌥️ Word Cloud Preview")
 
 if all_text.strip():
     wc = WordCloud(
-        width=800,
-        height=400,
-        max_words=max_words,
         background_color=bg_color,
         colormap=colormap,
+        max_words=max_words,
         mask=mask_array,
         font_path=font_path,
-        random_state=random_seed
+        random_state=random_seed,
+        width=800,
+        height=400
     ).generate(all_text)
 
     fig, ax = plt.subplots(figsize=(10, 5))
@@ -89,11 +103,9 @@ if all_text.strip():
     ax.axis("off")
     st.pyplot(fig)
 
-    # 🎯 Download the image
-    buffer = BytesIO()
-    fig.savefig(buffer, format="png", bbox_inches="tight", pad_inches=0.1)
-    buffer.seek(0)
-
-    st.download_button("📸 Download Word Cloud (PNG)", buffer, file_name="wordcloud.png", mime="image/png")
+    buf = BytesIO()
+    fig.savefig(buf, format="png", bbox_inches="tight", pad_inches=0.1)
+    buf.seek(0)
+    st.download_button("📸 Download Word Cloud (PNG)", buf, file_name="wordcloud.png", mime="image/png")
 else:
-    st.warning("Once submissions are collected, the word cloud will appear here.")
+    st.warning("No text data available yet.")
