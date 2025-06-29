@@ -1,4 +1,4 @@
-# pages/1_Admin.py
+# pages/1_manage sessions.py
 st.set_page_config(page_title="Admin Panel", page_icon="🧰", layout="wide")
 st.markdown("""
     <h1 style='color: #FF8C00;'>🧰 Wordcloud Admin Dashboard</h1>
