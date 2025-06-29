@@ -48,4 +48,4 @@ if submitted and r1 and r2:
     df.to_csv(file_path, index=False)
 
     st.session_state.submitted = True
-    st.experimental_rerun()
+    st.rerun()
