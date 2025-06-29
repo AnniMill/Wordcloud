@@ -18,7 +18,7 @@ from components.theme_utils import (
 )
 
 st.set_page_config(page_title="Admin Panel", page_icon="🧰", layout="wide")
-
+st.sidebar.info("🛠️ Debug: Admin page is loaded")
 # 🔐 Password protection
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "secret123")
 
