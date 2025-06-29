@@ -2,48 +2,84 @@
 import streamlit as st
 import pandas as pd
 import os
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+from io import BytesIO
+from PIL import Image
+import numpy as np
 
-st.set_page_config(page_title="Admin Panel", layout="wide")
-st.title("🛠️ Admin Panel: Wordcloud Dashboard")
+st.set_page_config(page_title="Admin Panel", page_icon="🧰", layout="wide")
+
+st.markdown("""
+    <h1 style='color: #FF8C00;'>🧰 Wordcloud Admin Dashboard</h1>
+    <p style='font-size:16px;'>Customize your live word cloud and download session data here.</p>
+    <hr style='margin-top: -10px; margin-bottom: 30px;'/>
+""", unsafe_allow_html=True)
 
 file_path = "submissions.csv"
 
+# Load response data
 if os.path.exists(file_path):
     df = pd.read_csv(file_path)
-    st.subheader("📋 Live Response Log")
-    st.dataframe(df)
+    st.subheader("📋 Live Responses")
+    st.dataframe(df, use_container_width=True)
 
-    if st.button("Download CSV"):
-        st.download_button(
-            label="Download Submissions",
-            data=df.to_csv(index=False),
-            file_name="responses.csv",
-            mime="text/csv"
-        )
+    st.download_button(
+        label="⬇ Download All Responses (CSV)",
+        data=df.to_csv(index=False),
+        file_name="responses.csv",
+        mime="text/csv"
+    )
+
+    # Construct text blob
+    all_text = " ".join(df["response1"].dropna().tolist() + df["response2"].dropna().tolist())
 else:
-    st.info("No submissions yet. Responses will appear here in real-time.")
-st.subheader("🎛️ Word Cloud Customization")
+    df = pd.DataFrame()
+    all_text = ""
+    st.info("No submissions yet. Responses will appear here once received.")
 
-col1, col2 = st.columns(2)
+# Theme presets
+themes = {
+    "Classic": {"bg": "#FFFFFF", "colormap": "viridis"},
+    "Pastel Party": {"bg": "#FFF0F5", "colormap": "Pastel1"},
+    "Dark Mode": {"bg": "#1E1E1E", "colormap": "plasma"}
+}
+
+st.subheader("🎨 Word Cloud Customization")
+
+col1, col2, col3 = st.columns(3)
+
 with col1:
-    bg_color = st.color_picker("Background Color", "#FFFFFF")
-    colormap = st.selectbox("Color Scheme", ["viridis", "plasma", "inferno", "magma", "cividis", "Set3", "Pastel1"])
-with col2:
-    max_words = st.slider("Max Words", min_value=20, max_value=200, value=100, step=10)
-    random_state = st.slider("Random Seed (for layout)", 0, 100, 42)
-from wordcloud import WordCloud
-import matplotlib.pyplot as plt
+    theme_name = st.selectbox("Theme Preset", list(themes.keys()), index=0)
+    theme = themes[theme_name]
+    bg_color = st.color_picker("Background Color", theme["bg"])
 
+with col2:
+    colormap = st.selectbox("Color Scheme", ["viridis", "plasma", "inferno", "magma", "cividis", "Set3", "Pastel1"], index=0)
+    max_words = st.slider("Max Words", min_value=10, max_value=200, value=100)
+
+with col3:
+    random_state = st.slider("Random Seed (Layout)", 0, 100, 42)
+    font_file = st.file_uploader("Upload Custom Font (.ttf)", type=["ttf"])
+    mask_file = st.file_uploader("Upload Image Mask (PNG/JPG)", type=["png", "jpg"])
+
+# Handle font path
+font_path = None
+if font_file:
+    font_path = "custom_font.ttf"
+    with open(font_path, "wb") as f:
+        f.write(font_file.getbuffer())
+
+# Handle image mask
+mask_array = None
+if mask_file:
+    image = Image.open(mask_file).convert("L")
+    mask_array = np.array(image)
+
+# Generate and show word cloud
 st.subheader("🌥️ Live Word Cloud")
 
-# Load data and combine responses
-if os.path.exists("submissions.csv"):
-    df = pd.read_csv("submissions.csv")
-
-    # Combine all responses into one text blob
-    text = " ".join(df["response1"].dropna().tolist() + df["response2"].dropna().tolist())
-
-if text:
+if all_text.strip():
     wc = WordCloud(
         width=800,
         height=400,
@@ -51,15 +87,24 @@ if text:
         background_color=bg_color,
         colormap=colormap,
         mask=mask_array,
+        font_path=font_path,
         random_state=random_state
-    ).generate(text)
+    ).generate(all_text)
 
     fig, ax = plt.subplots(figsize=(10, 5))
     ax.imshow(wc, interpolation="bilinear")
     ax.axis("off")
     st.pyplot(fig)
 
-    else:
-        st.warning("No responses yet for the word cloud.")
+    img_buf = BytesIO()
+    fig.savefig(img_buf, format="png", bbox_inches="tight", pad_inches=0.1)
+    img_buf.seek(0)
+
+    st.download_button(
+        label="💾 Download Word Cloud Image",
+        data=img_buf,
+        file_name="wordcloud.png",
+        mime="image/png"
+    )
 else:
-    st.info("Waiting for responses to generate the word cloud...")
+    st.warning("No words to display in the cloud yet.")
