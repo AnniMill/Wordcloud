@@ -1,86 +1,80 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
 import os
+import json
+from datetime import datetime
 import qrcode
 from io import BytesIO
-from PIL import Image
 
-APP_URL = "https://wordcloud-n0u2.onrender.com"
+st.set_page_config(page_title="Submit a Response", page_icon="📝")
 
-st.set_page_config(page_title="🌟 Wordcloud Submission", page_icon="📝", layout="centered")
+st.title("💬 Word Cloud Submission Form")
 
-if "submitted" not in st.session_state:
-    st.session_state.submitted = False
+# 🔐 Load valid sessions
+session_file = "data/sessions.json"
+now = datetime.now()
 
-if st.session_state.submitted:
-    st.markdown("## 🙌 Thanks for contributing!")
-    st.success("Your words have been saved to the word cloud.")
-    st.balloons()
-
-    qr = qrcode.make(APP_URL)
-    buf = BytesIO()
-    qr.save(buf)
-    buf.seek(0)
-    st.image(Image.open(buf), caption="Scan to submit again", use_container_width=True)
-    st.markdown(f"[🔁 Submit again]({APP_URL})")
-    st.stop()
-
-st.markdown("""
-    <div style='text-align: center;'>
-        <h2 style='color: #4B8BBE;'>✨ Share Your Voice ✨</h2>
-        <p>Choose your session and add two words to shape the cloud.</p>
-    </div>
-""", unsafe_allow_html=True)
-
-session = st.text_input(import json
-
-session_list_path = "data/sessions.json"
-
-# Load approved sessions
-if os.path.exists(session_list_path):
-    with open(session_list_path, "r") as f:
-        approved_sessions = json.load(f)
+if os.path.exists(session_file):
+    with open(session_file, "r") as f:
+        all_sessions = json.load(f)
 else:
-    approved_sessions = []
+    all_sessions = []
 
-if not approved_sessions:
-    st.error("🚫 No available sessions found. Please contact the event host.")
+# ⏱️ Filter approved sessions by active status & time range
+valid_sessions = [
+    s["name"] for s in all_sessions
+    if s.get("active")
+    and datetime.strptime(s["start"], "%Y-%m-%d %H:%M") <= now <= datetime.strptime(s["end"], "%Y-%m-%d %H:%M")
+]
+
+# ⛔ If no sessions are available
+if not valid_sessions:
+    st.error("⚠️ No active sessions are currently available. Please check back later or contact your host.")
     st.stop()
 
-session = st.selectbox("📛 Select Your Session", approved_sessions)
-if session:
-    file_path = f"data/submissions_{session}.csv"
+# 👥 Select session from dropdown
+session = st.selectbox("📛 Select Your Session", valid_sessions)
 
-    with st.form("submission_form"):
-        r1 = st.text_input("1️⃣ Response 1", max_chars=50)
-        r2 = st.text_input("2️⃣ Response 2", max_chars=50)
-        submitted = st.form_submit_button("🚀 Submit", use_container_width=True)
+# 📝 Submission form
+with st.form("submit_form"):
+    response1 = st.text_input("Enter a word or phrase that describes your experience:")
+    response2 = st.text_input("Enter another word or phrase:")
+    submit = st.form_submit_button("Submit")
 
-    if submitted:
-        if r1.strip() and r2.strip():
-            new_row = pd.DataFrame([{
-                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "response1": r1.strip(),
-                "response2": r2.strip()
-            }])
+# ✅ Save submission
+if submit:
+    if not response1 and not response2:
+        st.warning("Please enter at least one word or phrase.")
+    else:
+        df = pd.DataFrame([{
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "response1": response1,
+            "response2": response2
+        }])
 
-            if os.path.exists(file_path):
-                df = pd.read_csv(file_path)
-                df = pd.concat([df, new_row], ignore_index=True)
-            else:
-                df = new_row
-st.markdown("---")
-st.markdown(
-    "<p style='text-align:center;'>Are you an <b>event host</b>? "
-    "<a href='?page=Manage+Sessions'>Go to Manage Sessions 🔒</a></p>",
-    unsafe_allow_html=True
-)
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            df.to_csv(file_path, index=False)
-            st.session_state.submitted = True
-            st.rerun()
+        # Ensure folder exists
+        file_path = f"data/submissions_{session}.csv"
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+        # Append or create file
+        if os.path.exists(file_path):
+            df.to_csv(file_path, mode="a", header=False, index=False)
         else:
-            st.error("⚠️ Please fill in both responses.")
-else:
-    st.info("Enter a session name to begin.")
+            df.to_csv(file_path, index=False)
+
+        st.success("✅ Your responses have been submitted!")
+
+        # 🎁 Optional: Show QR code to resubmit
+        st.markdown("---")
+        st.markdown("🔁 Want to submit again or share this page?")
+        qr = qrcode.make("https://wordcloud-n0u2.onrender.com")
+        buf = BytesIO()
+        qr.save(buf)
+        st.image(buf.getvalue(), width=150, caption="Scan to reopen form")
+
+        # 🔒 Optional: Admin link
+        st.markdown(
+            "<p style='text-align:center;'>Are you an <b>event host</b>? "
+            "<a href='?page=Manage+Sessions'>Go to Manage Sessions 🔐</a></p>",
+            unsafe_allow_html=True
+        )
