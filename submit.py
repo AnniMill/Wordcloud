@@ -57,6 +57,7 @@ if session:
             else:
                 df = new_row
 
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
             df.to_csv(file_path, index=False)
             st.session_state.submitted = True
             st.rerun()
