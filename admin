@@ -8,75 +8,68 @@ from io import BytesIO
 from PIL import Image
 import numpy as np
 
+# 🌐 App config
 st.set_page_config(page_title="Admin Panel", page_icon="🧰", layout="wide")
 
 st.markdown("""
     <h1 style='color: #FF8C00;'>🧰 Wordcloud Admin Dashboard</h1>
-    <p style='font-size:16px;'>Customize your live word cloud and download session data here.</p>
-    <hr style='margin-top: -10px; margin-bottom: 30px;'/>
+    <p style='font-size:16px;'>Customize your live word cloud, download responses, and tailor the look & feel for your event.</p>
+    <hr style='margin-bottom: 25px;'/>
 """, unsafe_allow_html=True)
 
+# 📂 Load submission data
 file_path = "submissions.csv"
+df = pd.read_csv(file_path) if os.path.exists(file_path) else pd.DataFrame()
 
-# Load response data
-if os.path.exists(file_path):
-    df = pd.read_csv(file_path)
-    st.subheader("📋 Live Responses")
+# 📋 Response Log
+st.subheader("📋 Live Responses")
+if not df.empty:
     st.dataframe(df, use_container_width=True)
-
-    st.download_button(
-        label="⬇ Download All Responses (CSV)",
-        data=df.to_csv(index=False),
-        file_name="responses.csv",
-        mime="text/csv"
-    )
-
-    # Construct text blob
-    all_text = " ".join(df["response1"].dropna().tolist() + df["response2"].dropna().tolist())
+    st.download_button("⬇ Download All Responses (CSV)", df.to_csv(index=False), file_name="responses.csv", mime="text/csv")
 else:
-    df = pd.DataFrame()
-    all_text = ""
-    st.info("No submissions yet. Responses will appear here once received.")
+    st.info("No submissions yet. This panel will update automatically.")
 
-# Theme presets
+# 🔤 Build text blob for the cloud
+all_text = " ".join(df["response1"].dropna().tolist() + df["response2"].dropna().tolist())
+
+# 🎛️ Appearance Options
+st.subheader("🎨 Customize Word Cloud")
+
+# Event theme presets
 themes = {
     "Classic": {"bg": "#FFFFFF", "colormap": "viridis"},
     "Pastel Party": {"bg": "#FFF0F5", "colormap": "Pastel1"},
     "Dark Mode": {"bg": "#1E1E1E", "colormap": "plasma"}
 }
 
-st.subheader("🎨 Word Cloud Customization")
-
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    theme_name = st.selectbox("Theme Preset", list(themes.keys()), index=0)
-    theme = themes[theme_name]
-    bg_color = st.color_picker("Background Color", theme["bg"])
+    theme_choice = st.selectbox("Theme Preset", list(themes.keys()), index=0)
+    bg_color = st.color_picker("Background Color", themes[theme_choice]["bg"])
 
 with col2:
     colormap = st.selectbox("Color Scheme", ["viridis", "plasma", "inferno", "magma", "cividis", "Set3", "Pastel1"], index=0)
-    max_words = st.slider("Max Words", min_value=10, max_value=200, value=100)
+    max_words = st.slider("Max Words", 10, 200, value=100, step=10)
 
 with col3:
-    random_state = st.slider("Random Seed (Layout)", 0, 100, 42)
-    font_file = st.file_uploader("Upload Custom Font (.ttf)", type=["ttf"])
+    random_seed = st.slider("Random Seed", 0, 100, 42)
+    font_file = st.file_uploader("Upload .ttf Font (optional)", type=["ttf"])
     mask_file = st.file_uploader("Upload Image Mask (PNG/JPG)", type=["png", "jpg"])
 
-# Handle font path
+# Handle file inputs
 font_path = None
 if font_file:
     font_path = "custom_font.ttf"
     with open(font_path, "wb") as f:
         f.write(font_file.getbuffer())
 
-# Handle image mask
 mask_array = None
 if mask_file:
     image = Image.open(mask_file).convert("L")
     mask_array = np.array(image)
 
-# Generate and show word cloud
+# 🔮 Generate and display the word cloud
 st.subheader("🌥️ Live Word Cloud")
 
 if all_text.strip():
@@ -88,7 +81,7 @@ if all_text.strip():
         colormap=colormap,
         mask=mask_array,
         font_path=font_path,
-        random_state=random_state
+        random_state=random_seed
     ).generate(all_text)
 
     fig, ax = plt.subplots(figsize=(10, 5))
@@ -96,15 +89,11 @@ if all_text.strip():
     ax.axis("off")
     st.pyplot(fig)
 
-    img_buf = BytesIO()
-    fig.savefig(img_buf, format="png", bbox_inches="tight", pad_inches=0.1)
-    img_buf.seek(0)
+    # 🎯 Download the image
+    buffer = BytesIO()
+    fig.savefig(buffer, format="png", bbox_inches="tight", pad_inches=0.1)
+    buffer.seek(0)
 
-    st.download_button(
-        label="💾 Download Word Cloud Image",
-        data=img_buf,
-        file_name="wordcloud.png",
-        mime="image/png"
-    )
+    st.download_button("📸 Download Word Cloud (PNG)", buffer, file_name="wordcloud.png", mime="image/png")
 else:
-    st.warning("No words to display in the cloud yet.")
+    st.warning("Once submissions are collected, the word cloud will appear here.")
