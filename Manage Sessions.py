@@ -65,7 +65,60 @@ with st.expander("➕ Create New Session"):
 if sessions:
     st.subheader("📄 Existing Sessions")
     for i, s in enumerate(sessions):
-        with st.expander(f"🔹 {s['name']}"):
+        with st.expander(f"🔹 {s['name']}"):import numpy as np
+from PIL import Image
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+import io
+
+file_path = f"data/submissions_{s['name']}.csv"
+
+if os.path.exists(file_path):
+    df = pd.read_csv(file_path)
+    words = " ".join(df["response1"].fillna("").tolist() + df["response2"].fillna("").tolist())
+
+    if words.strip():
+        st.subheader("🖼️ Word Cloud Preview")
+
+        # 🖼️ Load image mask (optional)
+        mask_path = "assets/star_mask.png"
+        mask = None
+        if os.path.exists(mask_path):
+            mask = np.array(Image.open(mask_path))
+
+        # 🔡 Font path (optional)
+        font_path = "assets/PlayfairDisplay.ttf"
+        if not os.path.exists(font_path):
+            font_path = None  # fallback to default
+
+        # 🎛️ Color map selector
+        cmap = st.selectbox("🎨 Colormap", ["viridis", "plasma", "twilight", "cividis", "magma"], key=f"cmap_{i}")
+
+        # 🧠 Generate word cloud
+        wc = WordCloud(
+            width=800,
+            height=400,
+            mask=mask,
+            font_path=font_path,
+            background_color="white",
+            colormap=cmap
+        ).generate(words)
+
+        # Render plot
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.imshow(wc, interpolation="bilinear")
+        ax.axis("off")
+        st.pyplot(fig)
+
+        # 📥 Download as PNG
+        buf = io.BytesIO()
+        wc.to_image().save(buf, format="PNG")
+        st.download_button("📥 Download Word Cloud PNG", buf.getvalue(), file_name=f"{s['name']}_wordcloud.png", mime="image/png")
+    else:
+        st.info("No responses yet to render a word cloud.")
+else:
+    st.info("🗂️ No submissions file found for this session.")
+
             s["active"] = st.toggle("Active", value=s["active"], key=f"active_{i}")
             s["start"] = st.text_input("Start Time", value=s["start"], key=f"start_{i}")
             s["end"] = st.text_input("End Time", value=s["end"], key=f"end_{i}")
