@@ -74,3 +74,30 @@ if sessions:
         st.success("✅ Sessions updated.")
 else:
     st.info("No sessions found. Add one above to get started.")
+import pandas as pd
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+
+file_path = f"data/submissions_{s['name']}.csv"
+
+if os.path.exists(file_path):
+    df = pd.read_csv(file_path)
+    words = " ".join(df["response1"].fillna("").tolist() + df["response2"].fillna("").tolist())
+    
+    if words.strip():
+        st.write("📊 Word Cloud Preview")
+        wc = WordCloud(
+            width=800,
+            height=400,
+            background_color="white",
+            colormap="viridis"
+        ).generate(words)
+
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.imshow(wc, interpolation="bilinear")
+        ax.axis("off")
+        st.pyplot(fig)
+    else:
+        st.info("No responses yet to render a word cloud.")
+else:
+    st.info("🗂️ No submissions file found for this session.")
