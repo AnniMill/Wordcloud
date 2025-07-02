@@ -6,7 +6,11 @@ __pycache__/
 .DS_Store
 .env
 .venv/
+
+# Ignore dynamic session files
 data/*.csv
-data/archive/
+data/archive/*
+
+# Preserve folder structure
 !data/.gitkeep
 !data/archive/.gitkeep
