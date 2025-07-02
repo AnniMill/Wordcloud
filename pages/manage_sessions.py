@@ -45,4 +45,4 @@ sessions = load_sessions()
 
 # ➕ Create session
 with st.expander("➕ Create New Session"):
-    name = st.text_input("Session
+    name = st.text_input("Session Name")
