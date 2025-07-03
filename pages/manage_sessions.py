@@ -44,33 +44,46 @@ def save_sessions(sessions):
 sessions = load_sessions()
 
 # ➕ Create session form
+# ➕ Create session form with date + time inputs
 with st.expander("➕ Create New Session"):
     with st.form("create_session_form", clear_on_submit=False):
         name = st.text_input("📝 Session Name").strip().lower().replace(" ", "_")
-        col1, col2 = st.columns(2)
-        with col1:
-            start_time = st.datetime_input("⏱️ Start Time", value=datetime.now())
-        with col2:
-            end_time = st.datetime_input("⏳ End Time", value=datetime.now())
+
+        st.markdown("#### ⏱️ Start Time")
+        col1a, col1b = st.columns(2)
+        with col1a:
+            start_date = st.date_input("📅 Date", key="start_date")
+        with col1b:
+            start_time = st.time_input("⏰ Time", key="start_time")
+
+        st.markdown("#### ⏳ End Time")
+        col2a, col2b = st.columns(2)
+        with col2a:
+            end_date = st.date_input("📅 Date", key="end_date")
+        with col2b:
+            end_time = st.time_input("⏰ Time", key="end_time")
 
         active = st.toggle("✅ Active", value=True)
         submitted = st.form_submit_button("💾 Save Session")
 
         if submitted:
-            # Validate name
+            # Combine date + time into full datetime
+            start_dt = datetime.combine(start_date, start_time)
+            end_dt = datetime.combine(end_date, end_time)
+
             existing_names = [s["name"] for s in sessions]
             if not name:
                 st.warning("⚠️ Please enter a session name.")
             elif name in existing_names:
                 st.warning(f"⚠️ A session named '{name}' already exists.")
-            elif start_time >= end_time:
+            elif start_dt >= end_dt:
                 st.warning("⚠️ Start time must be before end time.")
             else:
                 sessions.append({
                     "name": name,
                     "active": active,
-                    "start": start_time.strftime("%Y-%m-%d %H:%M"),
-                    "end": end_time.strftime("%Y-%m-%d %H:%M")
+                    "start": start_dt.strftime("%Y-%m-%d %H:%M"),
+                    "end": end_dt.strftime("%Y-%m-%d %H:%M")
                 })
                 save_sessions(sessions)
                 st.success(f"✅ Session '{name}' created successfully!")
