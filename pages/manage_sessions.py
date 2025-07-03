@@ -74,7 +74,7 @@ with st.expander("➕ Create New Session"):
                 })
                 save_sessions(sessions)
                 st.success(f"✅ Session '{name}' created successfully!")
-                st.experimental_rerun()
+                st.rerun()
                 # 🔗 Generate QR code for session link
 session_url = f"https://wordcloud-n0u2.onrender.com/?session={s['name']}"
 qr_img = generate_qr_code(session_url)
