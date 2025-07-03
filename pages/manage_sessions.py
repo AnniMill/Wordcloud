@@ -109,5 +109,45 @@ if sessions:
 
             file_path = f"data/submissions_{s['name']}.csv"
             if os.path.exists(file_path):
-                df = pd.read_csv
-            
+                df = pd.read_csv(file_path)
+                words = " ".join(df["response1"].fillna("").tolist() + df["response2"].fillna("").tolist())
+
+                if words.strip():
+                    mask_path = "assets/star_mask.png"
+                    mask = np.array(Image.open(mask_path)) if os.path.exists(mask_path) else None
+
+                    font_path = "assets/PlayfairDisplay.ttf" if os.path.exists(font_path := "assets/PlayfairDisplay.ttf") else None
+
+                    cmap = st.selectbox("🎨 Colormap", ["viridis", "plasma", "twilight", "cividis", "magma"], key=f"cmap_{i}")
+
+                    wc = WordCloud(width=800, height=400, background_color="white", font_path=font_path, mask=mask, colormap=cmap).generate(words)
+
+                    fig, ax = plt.subplots(figsize=(10, 5))
+                    ax.imshow(wc, interpolation="bilinear")
+                    ax.axis("off")
+                    st.pyplot(fig)
+
+                    buf_wc = io.BytesIO()
+                    wc.to_image().save(buf_wc, format="PNG")
+                    st.download_button("📥 Download Word Cloud", buf_wc.getvalue(), file_name=f"{s['name']}_wordcloud.png", mime="image/png")
+                else:
+                    st.info("No responses yet to render a word cloud.")
+            else:
+                st.info("🗂️ No submission file found.")
+
+            # 📤 Share Session Popover
+            with st.popover("📤 Share Session", use_container_width=True):
+                session_url = f"https://wordcloud-n0u2.onrender.com/?session={s['name']}"
+                st.write("Scan or copy the link below to share this session.")
+                st.code(session_url, language="text")
+                qr_img = generate_qr_code(session_url)
+                buf_qr = io.BytesIO()
+                qr_img.save(buf_qr, format="PNG")
+                st.image(qr_img, caption="📲 QR Code", use_column_width=True)
+                st.download_button("📥 Download QR Code", buf_qr.getvalue(), file_name=f"{s['name']}_qr.png", mime="image/png")
+
+    if st.button("💾 Save All Changes"):
+        save_sessions(sessions)
+        st.success("✅ Sessions updated.")
+else:
+    st.info("No sessions found. Add one above to get started.")
