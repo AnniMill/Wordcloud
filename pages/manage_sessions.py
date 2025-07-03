@@ -43,6 +43,35 @@ def save_sessions(sessions):
 
 sessions = load_sessions()
 
-# ➕ Create session
+# ➕ Create session form
 with st.expander("➕ Create New Session"):
-    name = st.text_input("Session Name")
+    with st.form("create_session_form", clear_on_submit=False):
+        name = st.text_input("📝 Session Name").strip().lower().replace(" ", "_")
+        col1, col2 = st.columns(2)
+        with col1:
+            start_time = st.datetime_input("⏱️ Start Time", value=datetime.now())
+        with col2:
+            end_time = st.datetime_input("⏳ End Time", value=datetime.now())
+
+        active = st.toggle("✅ Active", value=True)
+        submitted = st.form_submit_button("💾 Save Session")
+
+        if submitted:
+            # Validate name
+            existing_names = [s["name"] for s in sessions]
+            if not name:
+                st.warning("⚠️ Please enter a session name.")
+            elif name in existing_names:
+                st.warning(f"⚠️ A session named '{name}' already exists.")
+            elif start_time >= end_time:
+                st.warning("⚠️ Start time must be before end time.")
+            else:
+                sessions.append({
+                    "name": name,
+                    "active": active,
+                    "start": start_time.strftime("%Y-%m-%d %H:%M"),
+                    "end": end_time.strftime("%Y-%m-%d %H:%M")
+                })
+                save_sessions(sessions)
+                st.success(f"✅ Session '{name}' created successfully!")
+                st.experimental_rerun()
