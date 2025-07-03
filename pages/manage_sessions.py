@@ -75,3 +75,32 @@ with st.expander("➕ Create New Session"):
                 save_sessions(sessions)
                 st.success(f"✅ Session '{name}' created successfully!")
                 st.experimental_rerun()
+                # 🔗 Generate QR code for session link
+session_url = f"https://wordcloud-n0u2.onrender.com/?session={s['name']}"
+qr_img = generate_qr_code(session_url)
+
+# 🖼️ Show QR code
+buf_qr = io.BytesIO()
+qr_img.save(buf_qr, format="PNG")
+st.image(qr_img, caption="📲 Session QR Code", use_column_width=True)
+
+# 📥 Download button
+st.download_button(
+    label="📥 Download QR Code",
+    data=buf_qr.getvalue(),
+    file_name=f"{s['name']}_qr.png",
+    mime="image/png"
+)
+
+import qrcode
+
+def generate_qr_code(data):
+    qr = qrcode.QRCode(
+        version=1,
+        box_size=10,
+        border=4
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    return img
