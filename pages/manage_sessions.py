@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import io
 
 # 🔐 Admin password
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "changeme")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "password")
 
 # Auth state
 if "admin_authenticated" not in st.session_state:
