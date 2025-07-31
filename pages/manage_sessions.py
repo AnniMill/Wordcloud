@@ -22,7 +22,7 @@ if not st.session_state.admin_authenticated:
     if st.button("Login") and pwd == ADMIN_PASSWORD:
         st.session_state.admin_authenticated = True
         st.rerun()
-    elif st.button("Login", key="admin_login_button"):
+    elif st.button("Login", key="admin_login_fail"):
         st.error("🚫 Incorrect password")
     st.stop()
 
@@ -70,7 +70,7 @@ with st.expander("➕ Create New Session"):
             end_time = st.time_input("⏰ Time", key="end_time")
 
         active = st.toggle("✅ Active", value=True)
-        submitted = st.form_submit_button("💾 Save Session")
+        submitted = st.form_submit_button("💾 Save Session", key="save_new_session")
 
         if submitted:
             start_dt = datetime.combine(start_date, start_time)
@@ -129,7 +129,7 @@ if sessions:
 
                     buf_wc = io.BytesIO()
                     wc.to_image().save(buf_wc, format="PNG")
-                    st.download_button("📥 Download Word Cloud", buf_wc.getvalue(), file_name=f"{s['name']}_wordcloud.png", mime="image/png")
+                    st.download_button("📥 Download Word Cloud", buf_wc.getvalue(), file_name=f"{s['name']}_wordcloud.png", mime="image/png", key=f"download_wc_{i}")
                 else:
                     st.info("No responses yet to render a word cloud.")
             else:
@@ -144,9 +144,9 @@ if sessions:
                 buf_qr = io.BytesIO()
                 qr_img.save(buf_qr, format="PNG")
                 st.image(qr_img, caption="📲 QR Code", use_column_width=True)
-                st.download_button("📥 Download QR Code", buf_qr.getvalue(), file_name=f"{s['name']}_qr.png", mime="image/png")
+                st.download_button("📥 Download QR Code", buf_qr.getvalue(), file_name=f"{s['name']}_qr.png", mime="image/png",key=f"download_qr_{i}")
 
-    if st.button("💾 Save All Changes"):
+    if st.button("💾 Save All Changes", key-"save_all_sessions"):
         save_sessions(sessions)
         st.success("✅ Sessions updated.")
 else:
