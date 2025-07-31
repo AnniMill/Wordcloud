@@ -70,7 +70,7 @@ with st.expander("➕ Create New Session"):
             end_time = st.time_input("⏰ Time", key="end_time")
 
         active = st.toggle("✅ Active", value=True)
-        submitted = st.form_submit_button("💾 Save Session", key="save_new_session")
+        submitted = st.form_submit_button("💾 Save Session")
 
         if submitted:
             start_dt = datetime.combine(start_date, start_time)
