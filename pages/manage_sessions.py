@@ -120,7 +120,14 @@ if sessions:
 
                     cmap = st.selectbox("🎨 Colormap", ["viridis", "plasma", "twilight", "cividis", "magma"], key=f"cmap_{i}")
 
-                    wc = WordCloud(width=800, height=400, background_color="white", font_path=font_path, mask=mask, colormap=cmap).generate(words)
+                    wc = WordCloud(
+                        width=800,
+                        height=400,
+                        background_color="white",
+                        font_path=font_path,
+                        mask=mask,
+                        colormap=cmap
+                    ).generate(words)
 
                     fig, ax = plt.subplots(figsize=(10, 5))
                     ax.imshow(wc, interpolation="bilinear")
@@ -129,35 +136,42 @@ if sessions:
 
                     buf_wc = io.BytesIO()
                     wc.to_image().save(buf_wc, format="PNG")
-                    st.download_button("📥 Download Word Cloud", buf_wc.getvalue(), file_name=f"{s['name']}_wordcloud.png", mime="image/png", key=f"download_wc_{i}")
+                    st.download_button(
+                        "📥 Download Word Cloud",
+                        buf_wc.getvalue(),
+                        file_name=f"{s['name']}_wordcloud.png",
+                        mime="image/png",
+                        key=f"download_wc_{i}"
+                    )
                 else:
                     st.info("No responses yet to render a word cloud.")
             else:
                 st.info("🗂️ No submission file found.")
-                
-# 📤 Share Session Popover
-           with st.expander("📤 Share Session"):
-    session_url = f"https://wordcloud-n0u2.onrender.com/?session={s['name']}"
-    st.write("🔗 Share this session by scanning or copying the link below:")
-    st.code(session_url, language="text")
 
-    try:
-        qr_img = generate_qr_code(session_url)
-        buf_qr = io.BytesIO()
-        qr_img.save(buf_qr, format="PNG")
-        buf_qr.seek(0)
+            # 📤 Share Session Popover
+            with st.expander("📤 Share Session"):
+                session_url = f"https://wordcloud-n0u2.onrender.com/?session={s['name']}"
+                st.write("🔗 Share this session by scanning or copying the link below:")
+                st.code(session_url, language="text")
 
-        st.image(qr_img, caption="📲 QR Code", use_column_width=True)
-        st.download_button(
-            label="📥 Download QR Code",
-            data=buf_qr.getvalue(),
-            file_name=f"{s['name']}_qr.png",
-            mime="image/png",
-            key=f"download_qr_{i}"
-        )
-    except Exception as e:
-        st.error(f"⚠️ Failed to generate QR code: {e}")
-    if st.button("💾 Save All Changes", key-"save_all_sessions"):
+                try:
+                    qr_img = generate_qr_code(session_url)
+                    buf_qr = io.BytesIO()
+                    qr_img.save(buf_qr, format="PNG")
+                    buf_qr.seek(0)
+
+                    st.image(qr_img, caption="📲 QR Code", use_column_width=True)
+                    st.download_button(
+                        label="📥 Download QR Code",
+                        data=buf_qr.getvalue(),
+                        file_name=f"{s['name']}_qr.png",
+                        mime="image/png",
+                        key=f"download_qr_{i}"
+                    )
+                except Exception as e:
+                    st.error(f"⚠️ Failed to generate QR code: {e}")
+
+    if st.button("💾 Save All Changes", key="save_all_sessions"):
         save_sessions(sessions)
         st.success("✅ Sessions updated.")
 else:
