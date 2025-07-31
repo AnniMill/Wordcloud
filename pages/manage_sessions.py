@@ -22,7 +22,7 @@ if not st.session_state.admin_authenticated:
     if st.button("Login") and pwd == ADMIN_PASSWORD:
         st.session_state.admin_authenticated = True
         st.rerun()
-    elif st.button("Login"):
+    elif st.button("Login", key="admin_login_button"):
         st.error("🚫 Incorrect password")
     st.stop()
 
