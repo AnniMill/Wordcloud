@@ -27,13 +27,21 @@ if not session:
     st.error(f"Session '{session_name}' not found.")
     st.stop()
 
-# 🧭 Display session info
-st.title("📝 Submit Your Response")
-st.subheader(session.get("question", f"Session: {session_name}"))
-
+# 🧭 Display sidebar info
 start = datetime.strptime(session["start"], "%Y-%m-%d %H:%M")
 end = datetime.strptime(session["end"], "%Y-%m-%d %H:%M")
 now = datetime.now()
+
+st.sidebar.markdown("### 📂 Session Info")
+st.sidebar.write(f"**Session:** `{session_name}`")
+st.sidebar.write(f"**Question:** {session.get('question', 'N/A')}")
+st.sidebar.write(f"**Start:** {start.strftime('%Y-%m-%d %H:%M')}")
+st.sidebar.write(f"**End:** {end.strftime('%Y-%m-%d %H:%M')}")
+st.sidebar.write(f"**Current Time:** {now.strftime('%Y-%m-%d %H:%M')}")
+
+# 🧭 Display session info
+st.title("📝 Submit Your Response")
+st.subheader(session.get("question", f"Session: {session_name}"))
 
 if now < start:
     st.warning(f"⏳ This session hasn't started yet — starts in {str(start - now).split('.')[0]}.")
