@@ -134,18 +134,29 @@ if sessions:
                     st.info("No responses yet to render a word cloud.")
             else:
                 st.info("🗂️ No submission file found.")
+                
+# 📤 Share Session Popover
+           with st.expander("📤 Share Session"):
+    session_url = f"https://wordcloud-n0u2.onrender.com/?session={s['name']}"
+    st.write("🔗 Share this session by scanning or copying the link below:")
+    st.code(session_url, language="text")
 
-            # 📤 Share Session Popover
-            with st.popover("📤 Share Session", use_container_width=True):
-                session_url = f"https://wordcloud-n0u2.onrender.com/?session={s['name']}"
-                st.write("Scan or copy the link below to share this session.")
-                st.code(session_url, language="text")
-                qr_img = generate_qr_code(session_url)
-                buf_qr = io.BytesIO()
-                qr_img.save(buf_qr, format="PNG")
-                st.image(qr_img, caption="📲 QR Code", use_column_width=True)
-                st.download_button("📥 Download QR Code", buf_qr.getvalue(), file_name=f"{s['name']}_qr.png", mime="image/png",key=f"download_qr_{i}")
+    try:
+        qr_img = generate_qr_code(session_url)
+        buf_qr = io.BytesIO()
+        qr_img.save(buf_qr, format="PNG")
+        buf_qr.seek(0)
 
+        st.image(qr_img, caption="📲 QR Code", use_column_width=True)
+        st.download_button(
+            label="📥 Download QR Code",
+            data=buf_qr.getvalue(),
+            file_name=f"{s['name']}_qr.png",
+            mime="image/png",
+            key=f"download_qr_{i}"
+        )
+    except Exception as e:
+        st.error(f"⚠️ Failed to generate QR code: {e}")
     if st.button("💾 Save All Changes", key-"save_all_sessions"):
         save_sessions(sessions)
         st.success("✅ Sessions updated.")
